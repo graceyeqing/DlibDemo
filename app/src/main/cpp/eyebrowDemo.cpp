@@ -5,48 +5,46 @@
 using namespace std;
 using namespace cv;
 
-int eyebrow(cv::Mat src,std::vector<cv::Point> shape_points, cv::Mat tmp_left, cv::Mat tmp_right)
-{
-	//string path = argv[1];
-	//string path = "/storage/emulated/0/imageTest.jpg";
+int eyebrow(cv::Mat src, std::vector<cv::Point> shape_points, cv::Mat tmp_left, cv::Mat tmp_right) {
+    //string path = argv[1];
+    //string path = "/storage/emulated/0/imageTest.jpg";
 
-	//Mat src;
-	//src = imread(path);
-	//vector<dlib::full_object_detection> shape_points;
-	//eyebrow points detect
-	//shape_points = Detect(src);
-	vector<cv::Point> eyepoint(10);
-	if (!shape_points.empty())
-	{
-		for (int i = 17; i <= 26; i++)
-		{
-			eyepoint[i - 17].x = shape_points[i].x;
-			eyepoint[i - 17].y = shape_points[i].y;
-		}
-	}
-	//eyebrow temple
-	//Mat tmp_left; //= imread("/storage/emulated/0/eyebrow_zuo.png");
-	//Mat tmp_right; //= imread("/storage/emulated/0/eyebrow_you.png");
-	Mat left_dst;
-	Mat right_dst;
+    //Mat src;
+    //src = imread(path);
+    //vector<dlib::full_object_detection> shape_points;
+    //eyebrow points detect
+    //shape_points = Detect(src);
+    vector<cv::Point> eyepoint(10);
+    if (!shape_points.empty()) {
+        for (int i = 17; i <= 26; i++) {
+            eyepoint[i - 17].x = shape_points[i].x;
+            eyepoint[i - 17].y = shape_points[i].y;
+        }
+    }
+    //eyebrow temple
+    //Mat tmp_left; //= imread("/storage/emulated/0/eyebrow_zuo.png");
+    //Mat tmp_right; //= imread("/storage/emulated/0/eyebrow_you.png");
+    Mat left_dst;
+    Mat right_dst;
 
-	//eyebrow scale
-	float scale_left_y;
-	float scale_left_x = 1.0;
-	scale_left_y = float(abs(eyepoint[4].x - eyepoint[0].x )) / (tmp_left.cols);
-	
-	//cout << "scale_left_x" << scale_left_x;
-	//cout << "tmp_left.cols" << tmp_left.cols;
-	//cout << "eyepoint" << eyepoint;
-	//cout << "eyepoint[4].x" << eyepoint[4].x;
-	resize(tmp_left, left_dst, Size(0, 0), scale_left_x, scale_left_y, INTER_LINEAR);
+    //eyebrow scale
+    float scale_left_y;
+    float scale_left_x = 1.0;
+    scale_left_y = float(abs(eyepoint[4].x - eyepoint[0].x)) / (tmp_left.cols);
+
+    //cout << "scale_left_x" << scale_left_x;
+    //cout << "tmp_left.cols" << tmp_left.cols;
+    //cout << "eyepoint" << eyepoint;
+    //cout << "eyepoint[4].x" << eyepoint[4].x;
+//    resize(tmp_left, left_dst, Size(0, 0), scale_left_x, scale_left_y, INTER_LINEAR);
+    resize(tmp_left, left_dst, Size(abs(eyepoint[4].x - eyepoint[0].x)+35, abs(eyepoint[2].y - eyepoint[4].y)+20), 0, 0, INTER_LINEAR);
 
     //right eye brow temple scale
     float scale_right_x = 1.0;
     float scale_right_y;
     scale_right_y = float(abs(eyepoint[9].x - eyepoint[5].x)) / (tmp_right.cols);
-    resize(tmp_right, right_dst, Size(0, 0), scale_right_x, scale_right_y, INTER_LINEAR);
-
+//    resize(tmp_right, right_dst, Size(0, 0), scale_right_x, scale_right_y, INTER_LINEAR);
+    resize(tmp_right, right_dst, Size(abs(eyepoint[9].x - eyepoint[5].x)+35, abs(eyepoint[7].y - eyepoint[5].y)+20), 0, 0, INTER_LINEAR);
 
     // Create an all white mask
     Mat left_dst_mask = 255 * Mat::ones(left_dst.rows, left_dst.cols, left_dst.depth());
@@ -60,7 +58,7 @@ int eyebrow(cv::Mat src,std::vector<cv::Point> shape_points, cv::Mat tmp_left, c
     Mat mixed_clone;
     Mat monochrome_clone;
 
-    seamlessClone(left_dst, src, left_dst_mask, center_left, mixed_clone,  MIXED_CLONE);
+    seamlessClone(left_dst, src, left_dst_mask, center_left, mixed_clone, MIXED_CLONE);
     seamlessClone(right_dst, mixed_clone, right_dst_mask, center_right, src, MIXED_CLONE);
 
 

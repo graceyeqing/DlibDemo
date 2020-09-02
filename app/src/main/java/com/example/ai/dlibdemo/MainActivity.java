@@ -5,7 +5,10 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.media.ExifInterface;
 import android.os.Bundle;
@@ -19,9 +22,13 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.ai.dlibdemo.utils.BitmapUtil;
 import com.tzutalin.dlib.Constants;
 import com.tzutalin.dlib.FaceDet;
 import com.tzutalin.dlib.VisionDetRet;
+import com.yanzhenjie.album.Action;
+import com.yanzhenjie.album.Album;
+import com.yanzhenjie.album.AlbumFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button blusherBtn;
     private Button eyeLinearBtn;
     private Button liftBtn;
+    private Button btnKeyPoint;
 
     //加速检测
     private boolean isFast;
@@ -100,6 +108,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int rectBottom;
     public static final BitmapFactory.Options OPTION_RGBA8888 = new BitmapFactory.Options();
     public static final BitmapFactory.Options OPTION_A8 = new BitmapFactory.Options();
+
+    private String mPicFilePath;//相册图片路径
 
     static {
         // Android's Bitmap.Config.ARGB_8888 is misleading, its memory layout is RGBA, as shown in
@@ -140,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         blusherBtn.setOnClickListener(this);
         eyeLinearBtn.setOnClickListener(this);
         liftBtn.setOnClickListener(this);
+        btnKeyPoint.setOnClickListener(this);
     }
 
     private void initView() {
@@ -156,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         eyeLinearBtn = findViewById(R.id.btn_eye_linear);
         liftBtn = findViewById(R.id.btn_lift);
         imageView = findViewById(R.id.image);
+        btnKeyPoint = findViewById(R.id.btn_keypoint);
 
         bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.model);
         //这里载入模板图片，并锁定图片为原图大小
@@ -173,6 +185,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //压缩图片否则会oom
         bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
         imageView.setImageBitmap(bitmap);
+
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectImage();
+            }
+        });
     }
 
     private void initValue() {
@@ -255,7 +274,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     scale = 1;
                 }
                 break;
+            case R.id.btn_keypoint:
+                //画出关键点
+                drawKeyPoint();
+                break;
         }
+    }
+
+    private void drawKeyPoint(){
+        //画出关键点
+        if (points.isEmpty()) {
+            Toast.makeText(this, "还未检测特征点", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if(bitmap != null){
+            Bitmap mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+            Canvas canvas = new Canvas(mutableBitmap);
+            Paint paint = new Paint();
+            paint.setColor(Color.RED);
+            for (int i = 0; i < points.size(); i++)
+            {
+                //将68个特征点画到图片上
+                canvas.drawCircle(points.get(i).x,points.get(i).y, 4, paint);
+            }
+            imageView.setImageBitmap(mutableBitmap);
+        }
+
+
     }
 
 
@@ -312,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //
 //        Bitmap lashSrc = lashDst.copy(Bitmap.Config.ARGB_8888, true);
         Bitmap lashMask = BitmapFactory.decodeResource(getResources(), R.drawable
-                .eye_lash_00, OPTION_A8);
+                .eye_lash_05, OPTION_A8);
 
         //修改调用
         int[] resultData = Bitmap2proc(piexls, p_eye_left, p_eye_right, p_eyebrow_left,
@@ -339,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Long start = System.currentTimeMillis();
         if (bitmap != null) {
-            results = faceDet.detect(bitmap2);
+            results = faceDet.detect(bitmap);
             for (final VisionDetRet ret : results) {
                 points = ret.getFaceLandmarks();
                 rectLeft = ret.getLeft() * scale;
@@ -447,5 +492,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         return matrix;
+    }
+
+    private void selectImage() {
+        Album.image(this)
+                .singleChoice() // Multi-Mode, Single-Mode: singleChoice().
+                .columnCount(4) // The number of columns in the page list.
+                .camera(true) // Whether the camera appears in the Item.
+                .onResult(new Action<ArrayList<AlbumFile>>() {
+                    @Override
+                    public void onAction(@NonNull ArrayList<AlbumFile> result) {
+
+                        if (result != null && result.size() > 0) {
+                            mPicFilePath = result.get(0).getPath();
+                            bitmap = BitmapUtil.compress(mPicFilePath);
+                            imageView.setImageBitmap(bitmap);
+                        }
+                    }
+                })
+                .onCancel(new Action<String>() {
+                    @Override
+                    public void onAction(@NonNull String result) {
+                        // The user canceled the operation.
+                    }
+                })
+                .start();
     }
 }

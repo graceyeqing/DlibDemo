@@ -2,7 +2,7 @@
 //嘴唇化妆
 // Created by 陶然 on 2018/10/29.
 //
-#include<opencv2\opencv.hpp>
+#include<opencv2/opencv.hpp>
 #include "lip_makeup.h"
 #include <dlib/opencv.h>
 #include <android/log.h>
@@ -291,7 +291,8 @@ int makeLip(Mat originalMat, std::vector<cv::Point> shape_points) {
 
     long start3 = getCurrentTime();
     Mat roi_img2 = originalMat(rect);
-    cvAdd4cMat_q(roi_img2, roi_img, 0.5);
+    //唇彩透明度
+    cvAdd4cMat_q(roi_img2, roi_img, 0.38);
     long end3 = getCurrentTime();
     __android_log_print(ANDROID_LOG_INFO, "taoran", "合成耗时 : %ld ms", (end3 - start3));
 
