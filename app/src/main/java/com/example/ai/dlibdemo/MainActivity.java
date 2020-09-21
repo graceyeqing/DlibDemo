@@ -2,6 +2,7 @@ package com.example.ai.dlibdemo;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -45,7 +46,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_CALENDAR,
+            Manifest.permission.WRITE_CALENDAR
     };
     private Button detectBtn;
     private Button makeUpBtn;
@@ -73,6 +76,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button eyeLinearBtn;
     private Button liftBtn;
     private Button btnKeyPoint;
+
+    private Button btnFaceChange;
 
     //加速检测
     private boolean isFast;
@@ -151,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         eyeLinearBtn.setOnClickListener(this);
         liftBtn.setOnClickListener(this);
         btnKeyPoint.setOnClickListener(this);
+        btnFaceChange.setOnClickListener(this);
     }
 
     private void initView() {
@@ -168,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         liftBtn = findViewById(R.id.btn_lift);
         imageView = findViewById(R.id.image);
         btnKeyPoint = findViewById(R.id.btn_keypoint);
+        btnFaceChange = findViewById(R.id.btn_change);
 
         bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.model);
         //这里载入模板图片，并锁定图片为原图大小
@@ -277,6 +284,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_keypoint:
                 //画出关键点
                 drawKeyPoint();
+            case R.id.btn_change:
+                //跳转人脸变换界面
+                startActivity(new Intent(MainActivity.this,FaceChangeActivity.class));
                 break;
         }
     }

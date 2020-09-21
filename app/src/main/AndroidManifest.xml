@@ -4,6 +4,9 @@
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
 
     <application
         android:name=".BaseApplication"
@@ -22,6 +25,24 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name=".FaceChangeActivity" />
+
+
+        <!--静态注册-->
+
+        <receiver android:name=".AlarmReceiver"
+
+            android:enabled="true"
+
+            android:exported="true">
+
+            <intent-filter>
+
+                <action android:name="mlxx_alarm_notification.RING"></action>
+
+            </intent-filter>
+
+        </receiver>
     </application>
 
 </manifest>
